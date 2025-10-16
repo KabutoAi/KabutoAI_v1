@@ -125,6 +125,15 @@
     .lang-toggle button:hover {
       filter: drop-shadow(0 0 6px rgba(168, 85, 247, .7));
     }
+    /* Responsive adjustments for floating action buttons on small screens */
+    @media (max-width: 640px) {
+      /* Hide demo links until toggled */
+      #demo-links { display: none; position: absolute; bottom: 64px; right: 0; }
+      #demo-links.show { display: flex; }
+      /* Reduce padding on buttons to save space */
+      #fab-wrapper button, #fab-wrapper a { padding-left: 12px; padding-right: 12px; }
+      #fab-wrapper span { display: none; }
+    }
   </style>
 </head>
 <body class="noise text-zinc-100 selection:bg-fuchsia-500/40 selection:text-white">
@@ -418,8 +427,7 @@
           Your chat widget mounts here. Later, just add your snippet.
         </p>
         <div id="kabuto-chat-widget" class="mt-5 rounded-2xl bg-black/30 border border-white/10 p-6 min-h-[220px] flex flex-col items-center justify-center text-zinc-500 max-w-md mx-auto">
-          <!-- Placeholder text shown before the chat is initialised -->
-          <span id="kabuto-placeholder" class="lang" data-en="🔧 Widget placeholder — snippet coming…" data-de="🔧 Widget-Platzhalter — Snippet folgt…">🔧 Widget placeholder — snippet coming…</span>
+          <span class="lang" data-en="🔧 Widget placeholder — snippet coming…" data-de="🔧 Widget-Platzhalter — Snippet folgt…">🔧 Widget placeholder — snippet coming…</span>
         </div>
       </div>
     </div>
@@ -526,20 +534,23 @@
     </div>
   </footer>
   <!-- Floating Action Buttons: Stacked WhatsApp & Telegram demos -->
-  <div class="fixed right-4 bottom-24 z-60 flex flex-col gap-2">
-    <!-- New button to trigger the chat widget -->
+  <div class="fixed right-4 bottom-24 z-60 flex flex-col gap-2" id="fab-wrapper">
+    <!-- New button to trigger the chat widget and (on mobile) toggle demo links -->
     <button id="open-chat-btn" class="flex items-center gap-2 px-5 py-3 rounded-full bg-violet-600 hover:bg-violet-500 transition shadow-xl border border-white/10">
       <i data-lucide="message-square" class="w-4 h-4"></i>
       <span class="text-sm font-semibold lang" data-en="Website Chat" data-de="Website-Chat">Website Chat</span>
     </button>
-    <a href="https://wa.me/12185793912" target="_blank" class="flex items-center gap-2 px-5 py-3 rounded-full bg-green-600 hover:bg-green-500 transition shadow-xl border border-white/10">
-      <i data-lucide="phone" class="w-4 h-4"></i>
-      <span class="text-sm font-semibold lang" data-en="Demo on WhatsApp" data-de="Demo auf WhatsApp">Demo on WhatsApp</span>
-    </a>
-    <a href="https://t.me/kabutomediabot" target="_blank" class="flex items-center gap-2 px-5 py-3 rounded-full bg-fuchsia-600 hover:bg-fuchsia-500 transition shadow-xl border border-white/10">
-      <i data-lucide="send" class="w-4 h-4"></i>
-      <span class="text-sm font-semibold lang" data-en="Demo on Telegram" data-de="Demo auf Telegram">Demo on Telegram</span>
-    </a>
+    <!-- Container for external demo links (WhatsApp & Telegram).  On mobile, this is hidden by default and toggled by the chat button. -->
+    <div id="demo-links" class="flex flex-col gap-2">
+      <a href="https://wa.me/12185793912" target="_blank" class="flex items-center gap-2 px-5 py-3 rounded-full bg-green-600 hover:bg-green-500 transition shadow-xl border border-white/10">
+        <i data-lucide="phone" class="w-4 h-4"></i>
+        <span class="text-sm font-semibold lang" data-en="Demo on WhatsApp" data-de="Demo auf WhatsApp">Demo on WhatsApp</span>
+      </a>
+      <a href="https://t.me/kabutomediabot" target="_blank" class="flex items-center gap-2 px-5 py-3 rounded-full bg-fuchsia-600 hover:bg-fuchsia-500 transition shadow-xl border border-white/10">
+        <i data-lucide="send" class="w-4 h-4"></i>
+        <span class="text-sm font-semibold lang" data-en="Demo on Telegram" data-de="Demo auf Telegram">Demo on Telegram</span>
+      </a>
+    </div>
   </div>
   <!-- Init & Language Toggle with currency -->
   <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
@@ -591,37 +602,17 @@
     // init
     updateLanguage('en');
   </script>
-  <!-- KabutoAI chat widget removed: using custom widget implemented below -->
-  <!-- Attach click handler for new chat trigger button -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const openChatBtn = document.getElementById('open-chat-btn');
-      if (openChatBtn) {
-        openChatBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          const chatBtn = document.getElementById('kabuto-chat-btn');
-          if (chatBtn) {
-            chatBtn.click();
-          }
-        });
-      }
-    });
-  </script>
-
-  <!-- Custom chat logic: initialise chat widget when the Website Chat button is clicked and forward messages to the backend API (/api/chat).  This overrides the dummy responses used previously. -->
+  <!-- Custom chat logic: Connect the Website Chat button to the server API and manage mobile demo links. -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const chatPlaceholder = document.getElementById('kabuto-chat-widget');
       const placeholderText = document.getElementById('kabuto-placeholder');
       const triggerBtn = document.getElementById('open-chat-btn');
-      // Base URL for the API: change if your backend is hosted on a different domain
+      const demoLinks = document.getElementById('demo-links');
       const API_BASE = '';
       const CLIENT_ID = 'default';
-
       let chatInitialised = false;
-
       function createChatUI() {
-        // Build chat UI inside the placeholder
         const container = document.createElement('div');
         container.id = 'kabuto-chat-container';
         container.className = 'w-full max-w-md flex flex-col glass border border-white/10 rounded-2xl p-0';
@@ -652,7 +643,6 @@
         `;
         return container;
       }
-
       async function sendToBackend(text) {
         try {
           const res = await fetch(`${API_BASE}/api/chat`, {
@@ -666,7 +656,6 @@
           return 'Fehler beim Senden – bitte später erneut versuchen.';
         }
       }
-
       function appendMessage(role, text) {
         const msgContainer = document.getElementById('kabuto-chat-messages');
         if (!msgContainer) return;
@@ -678,17 +667,13 @@
         }
         bubble.innerHTML = `${role === 'bot' ? avatar : ''}<div class="bubble-content">${text}</div>`;
         if (role === 'user') {
-          // place user bubble after content for right alignment
           bubble.innerHTML = `<div class="bubble-content">${text}</div>`;
         }
         msgContainer.appendChild(bubble);
         msgContainer.scrollTop = msgContainer.scrollHeight;
       }
-
       function initialiseChat() {
-        // Remove placeholder text
         if (placeholderText) placeholderText.style.display = 'none';
-        // Create UI if not already present
         if (!document.getElementById('kabuto-chat-container')) {
           const ui = createChatUI();
           chatPlaceholder.appendChild(ui);
@@ -705,22 +690,23 @@
           sendBtn.addEventListener('click', sendMessage);
           textInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
           closeBtn.addEventListener('click', () => {
-            // remove chat UI and show placeholder again
             if (ui.parentElement) ui.parentElement.removeChild(ui);
             if (placeholderText) placeholderText.style.display = 'block';
             chatInitialised = false;
           });
         }
       }
-
       if (triggerBtn) {
         triggerBtn.addEventListener('click', e => {
           e.preventDefault();
+          // On mobile, toggle demo links visibility
+          if (window.innerWidth <= 640 && demoLinks) {
+            demoLinks.classList.toggle('show');
+          }
           if (!chatInitialised) {
             initialiseChat();
             chatInitialised = true;
           }
-          // Scroll into view
           chatPlaceholder.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
       }
