@@ -306,7 +306,7 @@ def serve_widget_js():
         container.id = 'kabuto-embedded';
         container.innerHTML = `
           <style>
-            #kabuto-embedded { display: flex; flex-direction: column; width: 100%; height: 100%; backdrop-filter: blur(8px); background: rgba(17,17,27,0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; }
+            #kabuto-embedded { display: flex; flex-direction: column; max-width: 320px; margin-left: auto; margin-right: auto; height: 100%; backdrop-filter: blur(8px); background: rgba(17,17,27,0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; }
             #kabuto-embedded-header { background: linear-gradient(90deg,#9d4edd,#5f0cff,#3b0764); padding: 12px; color: #f0f0f0; text-align: center; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06); }
             #kabuto-embedded-messages { flex: 1; padding: 12px; overflow-y: auto; font-size: 14px; color: #e0e0e0; }
             #kabuto-embedded-input { display: flex; border-top: 1px solid rgba(255,255,255,0.06); }
@@ -352,7 +352,7 @@ def serve_widget_js():
           #kabuto-chat-btn:hover { transform: scale(1.1) translateY(-2px); box-shadow: 0 0 25px rgba(157,78,221,0.8), 0 0 50px rgba(95,12,255,0.6); }
           #kabuto-window {
             position: fixed; bottom: 100px; right: 20px;
-            width: 360px; height: 460px;
+            width: 320px; height: 460px;
             backdrop-filter: blur(8px);
             background: rgba(17,17,27,0.6);
             border-radius: 16px;

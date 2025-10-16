@@ -417,7 +417,7 @@
         <p class="mt-2 text-zinc-300/90 lang" data-en="Your chat widget mounts here. Later, just add your snippet." data-de="Hier wird dein Chat-Widget gemountet. Füge später einfach dein Snippet hinzu.">
           Your chat widget mounts here. Later, just add your snippet.
         </p>
-        <div id="kabuto-chat-widget" class="mt-5 rounded-2xl bg-black/30 border border-white/10 p-6 min-h-[220px] flex items-center justify-center text-zinc-500">
+        <div id="kabuto-chat-widget" class="mt-5 rounded-2xl bg-black/30 border border-white/10 p-6 min-h-[220px] flex flex-col items-center justify-center text-zinc-500 max-w-md mx-auto">
           <span class="lang" data-en="🔧 Widget placeholder — snippet coming…" data-de="🔧 Widget-Platzhalter — Snippet folgt…">🔧 Widget placeholder — snippet coming…</span>
         </div>
       </div>
@@ -526,6 +526,11 @@
   </footer>
   <!-- Floating Action Buttons: Stacked WhatsApp & Telegram demos -->
   <div class="fixed right-4 bottom-24 z-60 flex flex-col gap-2">
+    <!-- New button to trigger the chat widget -->
+    <button id="open-chat-btn" class="flex items-center gap-2 px-5 py-3 rounded-full bg-violet-600 hover:bg-violet-500 transition shadow-xl border border-white/10">
+      <i data-lucide="message-square" class="w-4 h-4"></i>
+      <span class="text-sm font-semibold lang" data-en="Website Chat" data-de="Website-Chat">Website Chat</span>
+    </button>
     <a href="https://wa.me/12185793912" target="_blank" class="flex items-center gap-2 px-5 py-3 rounded-full bg-green-600 hover:bg-green-500 transition shadow-xl border border-white/10">
       <i data-lucide="phone" class="w-4 h-4"></i>
       <span class="text-sm font-semibold lang" data-en="Demo on WhatsApp" data-de="Demo auf WhatsApp">Demo on WhatsApp</span>
@@ -594,5 +599,20 @@
     src="/widget.js"
     data-client-id="default"
   ></script>
+  <!-- Attach click handler for new chat trigger button -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const openChatBtn = document.getElementById('open-chat-btn');
+      if (openChatBtn) {
+        openChatBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const chatBtn = document.getElementById('kabuto-chat-btn');
+          if (chatBtn) {
+            chatBtn.click();
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
