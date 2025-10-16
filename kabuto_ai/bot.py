@@ -280,10 +280,10 @@ def serve_widget_js():
       const scriptEl = document.currentScript || document.querySelector('script[src*="widget.js"]');
       const apiUrl = scriptEl && scriptEl.getAttribute('data-api') ? scriptEl.getAttribute('data-api') : '';
       const clientId = scriptEl && scriptEl.getAttribute('data-client-id') ? scriptEl.getAttribute('data-client-id') : 'default';
-      // Shared function to post a message and update UI
+      // Shared function to post a message and update UI with styled bubbles
       async function postAndRender(text, msgsEl, inputEl) {
         if (!text) return;
-        msgsEl.innerHTML += `<div><b>Du:</b> ${text}</div>`;
+        msgsEl.innerHTML += `<div class="kabuto-msg kabuto-user"><strong>Du:</strong> ${text}</div>`;
         inputEl.value = '';
         try {
           const res = await fetch(apiUrl + '/api/chat', {
@@ -292,7 +292,7 @@ def serve_widget_js():
             body: JSON.stringify({ message: text, client_id: clientId })
           });
           const data = await res.json();
-          msgsEl.innerHTML += `<div><b>Kabuto:</b> ${data.reply}</div>`;
+          msgsEl.innerHTML += `<div class="kabuto-msg kabuto-bot"><strong>Kabuto:</strong> ${data.reply}</div>`;
           msgsEl.scrollTop = msgsEl.scrollHeight;
         } catch(err) {
           msgsEl.innerHTML += `<div><b>Fehler:</b> ${err}</div>`;
@@ -301,17 +301,22 @@ def serve_widget_js():
       // Attempt to mount inside existing placeholder
       const placeholder = document.getElementById('kabuto-chat-widget');
       if (placeholder) {
-        // Build embedded chat window
+        // Build embedded chat window with glass effect and gradient header
         const container = document.createElement('div');
         container.id = 'kabuto-embedded';
         container.innerHTML = `
           <style>
-            #kabuto-embedded { display: flex; flex-direction: column; width: 100%; height: 100%; background: #1a1a1a; border-radius: 12px; border: 1px solid #5f0cff; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-            #kabuto-embedded-header { background: linear-gradient(135deg,#5f0cff,#7d33ff); padding: 10px; color: #fff; text-align: center; font-weight: bold; }
-            #kabuto-embedded-messages { flex: 1; padding: 10px; overflow-y: auto; font-size: 14px; color: #eee; }
-            #kabuto-embedded-input { display: flex; border-top: 1px solid #333; }
-            #kabuto-embedded-input input { flex: 1; padding: 10px; border: none; background: #111; color: #fff; }
-            #kabuto-embedded-input button { background: #5f0cff; color: #fff; border: none; padding: 10px 15px; cursor: pointer; }
+            #kabuto-embedded { display: flex; flex-direction: column; width: 100%; height: 100%; backdrop-filter: blur(8px); background: rgba(17,17,27,0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; }
+            #kabuto-embedded-header { background: linear-gradient(90deg,#9d4edd,#5f0cff,#3b0764); padding: 12px; color: #f0f0f0; text-align: center; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06); }
+            #kabuto-embedded-messages { flex: 1; padding: 12px; overflow-y: auto; font-size: 14px; color: #e0e0e0; }
+            #kabuto-embedded-input { display: flex; border-top: 1px solid rgba(255,255,255,0.06); }
+            #kabuto-embedded-input input { flex: 1; padding: 12px; border: none; background: rgba(17,17,27,0.8); color: #fff; font-family: inherit; }
+            #kabuto-embedded-input button { background: linear-gradient(135deg,#9d4edd,#5f0cff); color: #fff; border: none; padding: 12px 18px; cursor: pointer; transition: transform 0.2s ease; font-size: 14px; }
+            #kabuto-embedded-input button:hover { transform: scale(1.05); }
+            /* Colour-coded messages */
+            #kabuto-embedded-messages .kabuto-msg { margin-bottom: 0.5rem; }
+            #kabuto-embedded-messages .kabuto-user { color: #9d4edd; }
+            #kabuto-embedded-messages .kabuto-bot { color: #7dd3fc; }
           </style>
           <div id="kabuto-embedded-header">Kabuto AI Chat</div>
           <div id="kabuto-embedded-messages"></div>
@@ -329,7 +334,7 @@ def serve_widget_js():
         input.addEventListener('keypress', e => { if (e.key === 'Enter') postAndRender(input.value.trim(), msgs, input); });
         return;
       }
-      // Otherwise create floating button and window
+      // Otherwise create floating button and window with neon gradient and glass effect
       const widget = document.createElement('div');
       widget.id = 'kabuto-widget';
       widget.innerHTML = `
@@ -337,32 +342,41 @@ def serve_widget_js():
           #kabuto-chat-btn {
             position: fixed;
             bottom: 20px; right: 20px;
-            background: linear-gradient(135deg,#5f0cff,#7d33ff);
+            background: linear-gradient(135deg,#9d4edd,#5f0cff,#3b0764);
             color: white; border: none;
-            border-radius: 50%; width: 60px; height: 60px;
-            font-size: 24px; cursor: pointer;
-            box-shadow: 0 0 15px rgba(95,12,255,0.6);
-            transition: 0.3s; z-index: 9999;
+            border-radius: 50%; width: 64px; height: 64px;
+            font-size: 26px; cursor: pointer;
+            box-shadow: 0 0 20px rgba(157,78,221,0.6), 0 0 40px rgba(95,12,255,0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease; z-index: 9999;
           }
-          #kabuto-chat-btn:hover { transform: scale(1.1); }
+          #kabuto-chat-btn:hover { transform: scale(1.1) translateY(-2px); box-shadow: 0 0 25px rgba(157,78,221,0.8), 0 0 50px rgba(95,12,255,0.6); }
           #kabuto-window {
-            position: fixed; bottom: 90px; right: 20px;
-            width: 320px; height: 420px;
-            background: #1a1a1a; border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: fixed; bottom: 100px; right: 20px;
+            width: 360px; height: 460px;
+            backdrop-filter: blur(8px);
+            background: rgba(17,17,27,0.6);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: none; flex-direction: column;
             overflow: hidden; z-index: 9999;
-            border: 1px solid #5f0cff;
+            border: 1px solid rgba(255,255,255,0.08);
+            font-family: 'Segoe UI', sans-serif;
           }
           #kabuto-header {
-            background: linear-gradient(135deg,#5f0cff,#7d33ff);
-            padding: 10px; color: #fff; text-align: center;
-            font-weight: bold;
+            background: linear-gradient(90deg,#9d4edd,#5f0cff,#3b0764);
+            padding: 12px; color: #f0f0f0; text-align: center;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
           }
-          #kabuto-messages { flex: 1; padding: 10px; overflow-y: auto; font-size: 14px; color: #eee; }
-          #kabuto-input { display: flex; border-top: 1px solid #333; }
-          #kabuto-input input { flex: 1; padding: 10px; border: none; background: #111; color: #fff; }
-          #kabuto-input button { background: #5f0cff; color: #fff; border: none; padding: 10px 15px; cursor: pointer; }
+          #kabuto-messages { flex: 1; padding: 12px; overflow-y: auto; font-size: 14px; color: #e0e0e0; }
+          #kabuto-input { display: flex; border-top: 1px solid rgba(255,255,255,0.06); }
+          #kabuto-input input { flex: 1; padding: 12px; border: none; background: rgba(17,17,27,0.8); color: #fff; font-family: inherit; }
+          #kabuto-input button { background: linear-gradient(135deg,#9d4edd,#5f0cff); color: #fff; border: none; padding: 12px 18px; cursor: pointer; transition: transform 0.2s ease; font-size: 14px; }
+          #kabuto-input button:hover { transform: scale(1.05); }
+          /* Colour-coded messages */
+          #kabuto-messages .kabuto-msg { margin-bottom: 0.5rem; }
+          #kabuto-messages .kabuto-user { color: #9d4edd; }
+          #kabuto-messages .kabuto-bot { color: #7dd3fc; }
         </style>
         <button id='kabuto-chat-btn'>💬</button>
         <div id='kabuto-window'>
