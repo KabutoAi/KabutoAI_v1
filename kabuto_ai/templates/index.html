@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kabuto AI – Dein KI-Chatbot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <header class="hero">
+    <div class="container">
+      <h1>Kabuto AI</h1>
+      <p>Dein persönlicher KI-Chatbot für WhatsApp, Telegram & Website</p>
+      <div class="buttons">
+        <a href="https://t.me/kabutomediabot" target="_blank">🟣 Telegram-Demo</a>
+        <a href="#" target="_blank">🟢 WhatsApp-Demo</a>
+        <a href="#chat" id="chat-launch">💬 Web-Chat testen</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="features fade-in">
+    <h2>Was Kabuto AI für dich tun kann</h2>
+    <ul>
+      <li>✅ 24/7 automatische Kundenkommunikation</li>
+      <li>🌍 Erkennt Sprache & antwortet auf Deutsch, Englisch & mehr</li>
+      <li>🤖 Nutzt KI (ChatGPT) für intelligente Antworten</li>
+      <li>📲 Funktioniert auf Telegram, WhatsApp & als Website-Widget</li>
+      <li>🎨 Anpassbar an dein Branding (Logo, Farben, Sprache)</li>
+    </ul>
+  </section>
+
+  <section class="pricing fade-in">
+    <h2>Preise & Pakete</h2>
+    <div class="price-table">
+      <div class="price-card">
+        <h3>Starter</h3>
+        <p>Telegram oder WhatsApp</p>
+        <p>1 Sprache · Basis-Branding</p>
+        <p class="price">990 €</p>
+      </div>
+      <div class="price-card highlight">
+        <h3>Business</h3>
+        <p>Telegram + WhatsApp</p>
+        <p>2 Sprachen · Logo & Farben</p>
+        <p class="price">1.490 €</p>
+      </div>
+      <div class="price-card">
+        <h3>Premium</h3>
+        <p>Alles + Web-Widget</p>
+        <p>Individuelle Texte + Setup</p>
+        <p class="price">2.490 €</p>
+      </div>
+    </div>
+    <p class="addons">Extras: Web-Widget +300 € • Support +49 €/Monat</p>
+  </section>
+
+  <section class="contact fade-in">
+    <h2>Kontakt</h2>
+    <p>Du hast Interesse oder Fragen?</p>
+    <p><strong><a href="mailto:kabuto.ai.business@gmail.com">kabuto.ai.business@gmail.com</a></strong></p>
+  </section>
+
+  <div id="chat-widget">
+    <button id="chat-button">💬</button>
+    <div id="chat-box" style="display: none;">
+      <div id="chat-messages">
+        <div class="bot">👋 Hallo! Ich bin Kabuto, dein KI-Chatbot-Demo.</div>
+      </div>
+      <input type="text" id="chat-input" placeholder="Schreib mir etwas…" />
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
