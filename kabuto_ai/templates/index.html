@@ -417,32 +417,9 @@
         <p class="mt-2 text-zinc-300/90 lang" data-en="Your chat widget mounts here. Later, just add your snippet." data-de="Hier wird dein Chat-Widget gemountet. Füge später einfach dein Snippet hinzu.">
           Your chat widget mounts here. Later, just add your snippet.
         </p>
-        <div id="kabuto-chat-widget" class="mt-5 rounded-2xl glass border border-white/10 min-h-[220px] max-w-md mx-auto overflow-hidden">
-          <!-- Custom interactive chat widget -->
-          <div id="custom-chat-container" class="w-full flex flex-col h-full" style="display:none;">
-            <!-- Header with logo and close button -->
-            <div id="custom-chat-header" class="flex items-center justify-between p-3 border-b border-white/10 bg-black/40 rounded-t-2xl">
-              <div class="flex items-center gap-2">
-                <img src="/static/kabutoailogo.png" alt="KabutoAI" class="w-6 h-6 rounded" />
-                <span class="text-sm font-semibold">KabutoAI Chat</span>
-              </div>
-              <button id="close-chat" class="text-zinc-400 hover:text-zinc-200 text-lg leading-none">&times;</button>
-            </div>
-            <!-- Messages area -->
-            <div id="custom-chat-messages" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
-            <!-- Input area -->
-            <div class="p-3 border-t border-white/10 bg-black/30 rounded-b-2xl">
-              <div class="flex items-center gap-2">
-                <input type="text" id="custom-chat-input" class="flex-1 px-3 py-2 rounded bg-white/10 text-white placeholder-zinc-400 text-sm outline-none" placeholder="Type your message..." />
-                <button id="custom-chat-send" class="px-3 py-2 rounded bg-fuchsia-600 hover:bg-fuchsia-500 transition text-sm">&gt;</button>
-              </div>
-            </div>
-          </div>
-          <!-- Placeholder shown when chat is closed -->
-          <div id="chat-placeholder" class="flex flex-col items-center justify-center text-zinc-400 space-y-2" style="display:flex;">
-            <span class="lang" data-en="🔧 Widget placeholder — snippet coming…" data-de="🔧 Widget-Platzhalter — Snippet folgt…">🔧 Widget placeholder — snippet coming…</span>
-            <span class="text-sm lang" data-en="Click the Website Chat button to start" data-de="Klicke auf den Website-Chat-Button zum Starten">Click the Website Chat button to start</span>
-          </div>
+        <div id="kabuto-chat-widget" class="mt-5 rounded-2xl bg-black/30 border border-white/10 p-6 min-h-[220px] flex flex-col items-center justify-center text-zinc-500 max-w-md mx-auto">
+          <!-- Placeholder text shown before the chat is initialised -->
+          <span id="kabuto-placeholder" class="lang" data-en="🔧 Widget placeholder — snippet coming…" data-de="🔧 Widget-Platzhalter — Snippet folgt…">🔧 Widget placeholder — snippet coming…</span>
         </div>
       </div>
     </div>
@@ -614,78 +591,137 @@
     // init
     updateLanguage('en');
   </script>
-  <!-- Custom chat widget logic -->
+  <!-- KabutoAI chat widget removed: using custom widget implemented below -->
+  <!-- Attach click handler for new chat trigger button -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const openChatBtn = document.getElementById('open-chat-btn');
-      const chatContainer = document.getElementById('custom-chat-container');
-      const chatPlaceholder = document.getElementById('chat-placeholder');
-      const closeChatBtn = document.getElementById('close-chat');
-      const chatInput = document.getElementById('custom-chat-input');
-      const chatSend = document.getElementById('custom-chat-send');
-      const chatMessages = document.getElementById('custom-chat-messages');
-
-      // Helper to append a message to the chat
-      function appendMessage(type, text) {
-        const wrap = document.createElement('div');
-        wrap.classList.add('flex');
-        if (type === 'user') {
-          wrap.classList.add('justify-end');
-          wrap.innerHTML = `<div class="bg-fuchsia-600/20 text-white px-3 py-2 rounded-lg max-w-[80%]">${text}</div>`;
-        } else {
-          wrap.classList.add('justify-start');
-          wrap.innerHTML = `<div class="flex items-start gap-2 max-w-[80%]"><img src="/static/kabutoailogo.png" alt="Bot" class="w-6 h-6 rounded" /><div class="bg-white/5 text-zinc-200 px-3 py-2 rounded-lg">${text}</div></div>`;
-        }
-        chatMessages.appendChild(wrap);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-
-      // Send user message and simulate bot reply
-      function sendMessage() {
-        const msg = chatInput.value.trim();
-        if (!msg) return;
-        appendMessage('user', msg);
-        chatInput.value = '';
-        const botReply = currentLang === 'en' ? 'This is just a demo response.' : 'Das ist nur eine Demo-Antwort.';
-        setTimeout(() => {
-          appendMessage('bot', botReply);
-        }, 500);
-      }
-
       if (openChatBtn) {
         openChatBtn.addEventListener('click', function(e) {
           e.preventDefault();
-          const isHidden = chatContainer.style.display === 'none' || chatContainer.style.display === '';
-          if (isHidden) {
-            chatContainer.style.display = 'flex';
-            chatPlaceholder.style.display = 'none';
-            const demoSection = document.getElementById('demo');
-            if (demoSection) {
-              demoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          } else {
-            chatContainer.style.display = 'none';
-            chatPlaceholder.style.display = 'flex';
+          const chatBtn = document.getElementById('kabuto-chat-btn');
+          if (chatBtn) {
+            chatBtn.click();
           }
         });
       }
-      if (closeChatBtn) {
-        closeChatBtn.addEventListener('click', function() {
-          chatContainer.style.display = 'none';
-          chatPlaceholder.style.display = 'flex';
-        });
+    });
+  </script>
+
+  <!-- Custom chat logic: initialise chat widget when the Website Chat button is clicked and forward messages to the backend API (/api/chat).  This overrides the dummy responses used previously. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatPlaceholder = document.getElementById('kabuto-chat-widget');
+      const placeholderText = document.getElementById('kabuto-placeholder');
+      const triggerBtn = document.getElementById('open-chat-btn');
+      // Base URL for the API: change if your backend is hosted on a different domain
+      const API_BASE = '';
+      const CLIENT_ID = 'default';
+
+      let chatInitialised = false;
+
+      function createChatUI() {
+        // Build chat UI inside the placeholder
+        const container = document.createElement('div');
+        container.id = 'kabuto-chat-container';
+        container.className = 'w-full max-w-md flex flex-col glass border border-white/10 rounded-2xl p-0';
+        container.innerHTML = `
+          <style>
+            #kabuto-chat-container { height: 360px; }
+            #kabuto-chat-header { background: linear-gradient(90deg,#9d4edd,#5f0cff,#3b0764); padding: 12px; color: #f0f0f0; font-weight: 600; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); position: relative; }
+            #kabuto-chat-close { position: absolute; top: 8px; right: 12px; cursor: pointer; font-size: 18px; }
+            #kabuto-chat-messages { flex: 1; padding: 12px; overflow-y: auto; font-size: 14px; color: #e0e0e0; }
+            #kabuto-chat-input { display: flex; border-top: 1px solid rgba(255,255,255,0.1); }
+            #kabuto-chat-input input { flex: 1; padding: 12px; background: rgba(17,17,27,0.8); border: none; color: #fff; font-family: inherit; outline: none; }
+            #kabuto-chat-input button { padding: 12px 18px; border: none; cursor: pointer; background: linear-gradient(135deg,#9d4edd,#5f0cff); color: #fff; transition: transform 0.2s ease; }
+            #kabuto-chat-input button:hover { transform: scale(1.05); }
+            .kabuto-bubble { margin-bottom: 0.5rem; display: flex; align-items: flex-start; gap: 8px; }
+            .kabuto-bubble.bot { color: #c4b5fd; }
+            .kabuto-bubble.user { justify-content: flex-end; color: #f472b6; }
+            .kabuto-bubble .bubble-content { max-width: 75%; padding: 8px 12px; border-radius: 12px; background: rgba(255,255,255,0.05); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.08); }
+            .kabuto-bubble.bot .bubble-content { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); }
+            .kabuto-bubble.user .bubble-content { background: rgba(236,72,153,0.2); border-color: rgba(236,72,153,0.35); }
+            .kabuto-bubble img { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+          </style>
+          <div id="kabuto-chat-header">Kabuto AI Chat <span id="kabuto-chat-close">×</span></div>
+          <div id="kabuto-chat-messages"></div>
+          <div id="kabuto-chat-input">
+            <input type="text" id="kabuto-chat-text" placeholder="Nachricht eingeben…" />
+            <button id="kabuto-chat-send">➤</button>
+          </div>
+        `;
+        return container;
       }
-      if (chatSend) {
-        chatSend.addEventListener('click', function() {
-          sendMessage();
-        });
+
+      async function sendToBackend(text) {
+        try {
+          const res = await fetch(`${API_BASE}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, client_id: CLIENT_ID })
+          });
+          const data = await res.json();
+          return data.reply || '…';
+        } catch (err) {
+          return 'Fehler beim Senden – bitte später erneut versuchen.';
+        }
       }
-      if (chatInput) {
-        chatInput.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
+
+      function appendMessage(role, text) {
+        const msgContainer = document.getElementById('kabuto-chat-messages');
+        if (!msgContainer) return;
+        const bubble = document.createElement('div');
+        bubble.className = `kabuto-bubble ${role}`;
+        let avatar = '';
+        if (role === 'bot') {
+          avatar = `<img src="/static/kabutoailogo.png" alt="Bot" />`;
+        }
+        bubble.innerHTML = `${role === 'bot' ? avatar : ''}<div class="bubble-content">${text}</div>`;
+        if (role === 'user') {
+          // place user bubble after content for right alignment
+          bubble.innerHTML = `<div class="bubble-content">${text}</div>`;
+        }
+        msgContainer.appendChild(bubble);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+      }
+
+      function initialiseChat() {
+        // Remove placeholder text
+        if (placeholderText) placeholderText.style.display = 'none';
+        // Create UI if not already present
+        if (!document.getElementById('kabuto-chat-container')) {
+          const ui = createChatUI();
+          chatPlaceholder.appendChild(ui);
+          const closeBtn = ui.querySelector('#kabuto-chat-close');
+          const textInput = ui.querySelector('#kabuto-chat-text');
+          const sendBtn = ui.querySelector('#kabuto-chat-send');
+          function sendMessage() {
+            const text = textInput.value.trim();
+            if (!text) return;
+            appendMessage('user', text);
+            textInput.value = '';
+            sendToBackend(text).then(reply => appendMessage('bot', reply));
           }
+          sendBtn.addEventListener('click', sendMessage);
+          textInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+          closeBtn.addEventListener('click', () => {
+            // remove chat UI and show placeholder again
+            if (ui.parentElement) ui.parentElement.removeChild(ui);
+            if (placeholderText) placeholderText.style.display = 'block';
+            chatInitialised = false;
+          });
+        }
+      }
+
+      if (triggerBtn) {
+        triggerBtn.addEventListener('click', e => {
+          e.preventDefault();
+          if (!chatInitialised) {
+            initialiseChat();
+            chatInitialised = true;
+          }
+          // Scroll into view
+          chatPlaceholder.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
       }
     });
