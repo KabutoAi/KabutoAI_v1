@@ -32,7 +32,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Tuple
 
 from dotenv import load_dotenv
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, render_template
 import telebot
 from openai import OpenAI
 from langdetect import detect
@@ -418,6 +418,14 @@ def chat_api():
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     response.headers.add('Access-Control-Allow-Methods', 'POST')
     return response
+
+# ---------------------------------------------------------------------------
+# Landing page route
+#
+@app.route("/")
+def index():
+    """Serve the KabutoAI landing page."""
+    return render_template("index.html")
 
 
 # ---------------------------------------------------------------------------
